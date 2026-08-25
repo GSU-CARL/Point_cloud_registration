@@ -47,9 +47,10 @@ ros2 service call /run_pipeline std_srvs/srv/Trigger
 ```bash
 #example
 ros2 launch my_point_reg pipeline.launch.py \
-  source_pcd_path:=/home/fishman/ros2_ws/src/my_point_reg/PCD/full_scan_high.pcd \
-  target_pcd_path:=/home/fishman/ros2_ws/src/my_point_reg/PCD/notfull_scan_low.pcd \
-  leaf_size:=0.1
+  source_pcd_path:=$(pwd)/PCD/notfull_scan_low.pcd \
+  target_pcd_path:=$(pwd)/PCD/full_scan_high.pcd \
+  leaf_size:=0.1 \
+  output_dir:=output_test_file
 ```
 
 Use absolute paths — bash doesn't expand `~` after `:=`. `source` is the
