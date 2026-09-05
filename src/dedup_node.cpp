@@ -14,7 +14,7 @@
 
 namespace
 {
-constexpr const char * kDefaultOutputDir = "output_test_file";
+constexpr const char * kDefaultOutputDir = MY_POINT_REG_SOURCE_DIR "/output_test_file";
 }  // namespace
 
 // "deduplicate" stage of the point-cloud merge pipeline (see

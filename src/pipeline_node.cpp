@@ -13,7 +13,7 @@
 
 namespace
 {
-constexpr const char * kDefaultOutputDir = "output_test_file";
+constexpr const char * kDefaultOutputDir = MY_POINT_REG_SOURCE_DIR "/output_test_file";
 
 // One entry per stage node this pipeline drives: the parameter client used to
 // reconfigure it before a run, and the Trigger client used to run it. Both

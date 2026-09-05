@@ -171,8 +171,9 @@ is just `Merged cloud: ...` with no deduplicated-cloud line.
 If a stage fails the response is `success=False`, containing the log up to that
 point followed by `FAILED at <stage>: <the stage's own error message>`.
 
-**Outputs**, all in `output_dir` (default `output_test_file/`, resolved from the
-directory you ran `ros2 launch` in):
+**Outputs**, all in `output_dir` (default `output_test_file/` inside this
+package's own source directory, regardless of the directory you ran
+`ros2 launch` in):
 
 | file | from |
 |---|---|

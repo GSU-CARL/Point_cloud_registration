@@ -22,7 +22,7 @@
 
 namespace
 {
-constexpr const char * kDefaultOutputDir = "output_test_file";
+constexpr const char * kDefaultOutputDir = MY_POINT_REG_SOURCE_DIR "/output_test_file";
 constexpr const char * kMethodSacIa = "sac_ia";
 constexpr const char * kMethodYawSweep = "yaw_sweep";
 

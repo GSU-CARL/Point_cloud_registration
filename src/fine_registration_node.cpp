@@ -19,7 +19,7 @@
 
 namespace
 {
-constexpr const char * kDefaultOutputDir = "output_test_file";
+constexpr const char * kDefaultOutputDir = MY_POINT_REG_SOURCE_DIR "/output_test_file";
 
 // Reads a 4x4 transform written in the same plain-text, space-separated,
 // row-major layout coarse_registration_node writes (see

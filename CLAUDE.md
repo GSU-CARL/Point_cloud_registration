@@ -99,10 +99,18 @@ Every **stage node** in this package follows the same shape — read
   with an explanatory message and return early — they don't throw.
 - **Default output paths.** Any `output_*_pcd_path` parameter left empty is
   resolved at call time to `output_test_file/<input_stem>_<suffix>.pcd`
-  (directory auto-created via `std::filesystem::create_directories`,
-  relative to wherever the node process was launched from). The
-  `kDefaultOutputDir = "output_test_file"` constant is duplicated per node
-  file rather than shared — keep that pattern if you add a node rather than
+  (directory auto-created via `std::filesystem::create_directories`). As of
+  2026-09-05, `output_test_file` is anchored to this package's own source
+  directory (`MY_POINT_REG_SOURCE_DIR`, a compile definition set in
+  `CMakeLists.txt` from `CMAKE_CURRENT_SOURCE_DIR`) rather than wherever the
+  node process was launched from — a run started from `~/ros2_ws` (the usual
+  case) used to scatter an `output_test_file/` there instead of inside this
+  package. `pipeline.launch.py`'s `output_dir` launch argument default is
+  computed the same way, via `os.path.realpath(__file__)` (which resolves
+  through the `--symlink-install` symlink back to this source tree). The
+  `kDefaultOutputDir = MY_POINT_REG_SOURCE_DIR "/output_test_file"` constant
+  is duplicated per node file rather than shared — keep that pattern if you
+  add a node rather than
   introducing a shared header for one constant.
 - **Source is aligned onto target**, consistently, in every stage that takes
   both: the registration nodes solve for the transform that brings `source_*`

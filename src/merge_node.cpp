@@ -19,7 +19,7 @@
 
 namespace
 {
-constexpr const char * kDefaultOutputDir = "output_test_file";
+constexpr const char * kDefaultOutputDir = MY_POINT_REG_SOURCE_DIR "/output_test_file";
 
 // Clamps a (possibly short or out-of-range) 3-element parameter array to a
 // valid 0-255 RGB triple. Missing channels come out 0 rather than throwing,

@@ -14,9 +14,14 @@ before calling the service.
         leaf_size:=0.1
     ros2 service call /run_pipeline std_srvs/srv/Trigger
 
-Relative paths (including the default output_dir) resolve against the working
-directory ros2 launch was started from.
+The default output_dir is this package's own output_test_file/ (resolved
+below, not the working directory ros2 launch was started from) - pass
+output_dir:=<path> to send output elsewhere. Any other relative path given
+explicitly still resolves against the working directory ros2 launch was
+started from.
 """
+
+import os
 
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
@@ -33,6 +38,11 @@ STAGE_NODES = [
     'dedup_node',
 ]
 
+# realpath follows the --symlink-install symlink back to the source tree, so
+# this is src/my_point_reg regardless of the directory ros2 launch runs from.
+_PACKAGE_SOURCE_DIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+_DEFAULT_OUTPUT_DIR = os.path.join(_PACKAGE_SOURCE_DIR, 'output_test_file')
+
 
 def generate_launch_description():
     arguments = [
@@ -46,7 +56,7 @@ def generate_launch_description():
             description='Cloud held fixed (required).'),
         DeclareLaunchArgument(
             'output_dir',
-            default_value='output_test_file',
+            default_value=_DEFAULT_OUTPUT_DIR,
             description='Directory for all intermediate and merged clouds.'),
         DeclareLaunchArgument(
             'coarse_method',

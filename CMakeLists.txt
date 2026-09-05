@@ -5,6 +5,11 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+# Anchors kDefaultOutputDir (in every node) to this package's source
+# directory, so the default output_test_file/ lands here regardless of the
+# working directory a node/launch file was started from.
+add_compile_definitions(MY_POINT_REG_SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)

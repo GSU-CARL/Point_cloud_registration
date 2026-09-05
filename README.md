@@ -53,14 +53,6 @@ ros2 launch my_point_reg pipeline.launch.py \
   output_dir:=output_test_file
 ```
 
-Use absolute paths — bash doesn't expand `~` after `:=`. `source` is the
-cloud that gets transformed; `target` is held fixed. Output (including the
-merged, deduplicated cloud) lands in `output_dir` (default
-`output_test_file/`, created next to wherever the launch was run from).
-
-The response `message` returns a log of every stage: point counts, fitness
-scores, and file paths. A failing stage stops the run and reports which one
-and why — partial output stays on disk for inspection.
 
 ## Nodes
 
@@ -81,18 +73,80 @@ Every node declares all its parameters with defaults; run each with `--ros-args 
 List them with `ros2 param list /<node_name>` once it's running, or read the
 top of the corresponding `src/<node>.cpp` — every default lives there.
 
-Running a single stage by hand follows the same shape everywhere:
+## Running nodes individually
+
+Every node does nothing at startup beyond declaring parameters and
+advertising its service — start it with whichever parameters it needs, then
+trigger it from a second terminal. Only run one instance of a given node at a
+time; they share a fixed node name, so a second instance competes for the
+same service. Leave any `output_*_pcd_path`/`output_transform_path` unset and
+it resolves to `output_test_file/<input_stem>_<suffix>.pcd` inside this
+package's own source directory (directory auto-created), regardless of where
+you ran the node from.
+
+**`voxel_node`** — `/voxelize`. Only required param is `input_pcd_path`.
 
 ```bash
-ros2 run my_point_reg voxel_node --ros-args -p input_pcd_path:=/path/to/input.pcd
+ros2 run my_point_reg voxel_node --ros-args \
+  -p input_pcd_path:=/path/to/input.pcd \
+  -p leaf_size:=0.1
 # in a second terminal:
 ros2 service call /voxelize std_srvs/srv/Trigger
 ```
 
-Leave any `output_*_pcd_path`/`output_transform_path` unset and it resolves to
-`output_test_file/<input_stem>_<suffix>.pcd` (directory auto-created). Only
-run one instance of a given node at a time — they share a fixed node name, so
-a second instance competes for the same service.
+**`feature_node`** — `/estimate_features`. Only needed if you plan to run
+`coarse_registration_node` with `method:=sac_ia`; `yaw_sweep` (the default)
+never reads its output.
+
+```bash
+ros2 run my_point_reg feature_node --ros-args \
+  -p input_pcd_path:=/path/to/voxelized.pcd
+ros2 service call /estimate_features std_srvs/srv/Trigger
+```
+
+**`coarse_registration_node`** — `/register_coarse`. Needs `source_pcd_path`
+and `target_pcd_path` always; `sac_ia` additionally needs the four
+`*_normals_pcd_path`/`*_fpfh_pcd_path` params from `feature_node`'s output.
+
+```bash
+ros2 run my_point_reg coarse_registration_node --ros-args \
+  -p method:=yaw_sweep \
+  -p source_pcd_path:=/path/to/source_voxelized.pcd \
+  -p target_pcd_path:=/path/to/target_voxelized.pcd
+ros2 service call /register_coarse std_srvs/srv/Trigger
+```
+
+**`fine_registration_node`** — `/register_fine`. Needs `source_pcd_path` and
+`target_pcd_path`; `initial_guess_transform_path` should point at the coarse
+stage's output transform (omit it to start GICP from identity).
+
+```bash
+ros2 run my_point_reg fine_registration_node --ros-args \
+  -p source_pcd_path:=/path/to/source_voxelized.pcd \
+  -p target_pcd_path:=/path/to/target_voxelized.pcd \
+  -p initial_guess_transform_path:=/path/to/coarse_transform.txt
+ros2 service call /register_fine std_srvs/srv/Trigger
+```
+
+**`merge_node`** — `/merge`. Needs `source_pcd_path`, `target_pcd_path`, and
+`transform_path` (the fine stage's output transform).
+
+```bash
+ros2 run my_point_reg merge_node --ros-args \
+  -p source_pcd_path:=/path/to/source_voxelized.pcd \
+  -p target_pcd_path:=/path/to/target_voxelized.pcd \
+  -p transform_path:=/path/to/fine_transform.txt
+ros2 service call /merge std_srvs/srv/Trigger
+```
+
+**`dedup_node`** — `/deduplicate`. Only required param is `input_pcd_path`
+(point it at `merge_node`'s output).
+
+```bash
+ros2 run my_point_reg dedup_node --ros-args \
+  -p input_pcd_path:=/path/to/merged.pcd
+ros2 service call /deduplicate std_srvs/srv/Trigger
+```
 
 Coarse and fine registration both write a plain-text 4×4 row-major transform
 (space-separated) alongside the aligned cloud; `fine_registration_node` and
