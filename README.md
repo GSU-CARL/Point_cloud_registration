@@ -9,6 +9,12 @@ Pipeline: voxel downsample → coarse (global) registration → fine
 `std_srvs/srv/Trigger` service; `pipeline_node` runs all of them in order
 from one call.
 
+## Before / after
+
+| Before (raw scans, unregistered) | After (`yaw_sweep` coarse + GICP fine) |
+|---|---|
+| ![before](img/run8_before.png) | ![after](img/run8_after.png) |
+
 ## Prerequisites
 
 - ROS 2 Jazzy (or another rosdep-supported distro — adjust the `source` path below)
